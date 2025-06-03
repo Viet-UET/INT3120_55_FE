@@ -5,11 +5,13 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
@@ -19,58 +21,102 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.example.quicknews.data.model.Article
 import com.example.quicknews.ui.viewmodel.NewsViewModel
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     newsViewModel: NewsViewModel = viewModel(),
     onArticleClick: (String) -> Unit,
-    onSearchClick: () -> Unit
+    onSearchClick: () -> Unit,
+    onCategoryClick: (String) -> Unit,
 ) {
     val topHeadlines by newsViewModel.topHeadlines.collectAsState()
     val isLoading by newsViewModel.isLoading.collectAsState()
     val error by newsViewModel.error.collectAsState()
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("QuickNews") },
-                actions = {
-                    IconButton(onClick = onSearchClick) {
-                        Icon(Icons.Default.Search, contentDescription = "Search")
+    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+    val scope = rememberCoroutineScope()
+
+    ModalNavigationDrawer(
+        drawerContent = {
+            ModalDrawerSheet {
+                Spacer(Modifier.height(12.dp))
+                NavigationDrawerItem(
+                    icon = { Icon(Icons.Default.Menu, contentDescription = null) },
+                    label = { Text("Home Screen") },
+                    selected = false, // Có thể thêm logic để xác định mục được chọn
+                    onClick = {
+                        scope.launch { drawerState.close() }
+                    },
+                    modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
+                );
+                NavigationDrawerItem(
+                    icon = { Icon(Icons.Default.Menu, contentDescription = null) }, // Hoặc một icon khác phù hợp
+                    label = { Text("Category News Screen") },
+                    selected = false,
+                    onClick = {
+                        scope.launch { drawerState.close() }
+                        // Điều hướng đến một category mặc định, ví dụ: "general"
+                        onCategoryClick("general")
+                    },
+                    modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
+                )
+
+            }
+        },
+        drawerState = drawerState
+    ) {
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = { Text("QuickNews") },
+                    navigationIcon = {
+                        IconButton(onClick = {
+                            scope.launch { drawerState.open() }
+                        }) {
+                            Icon(Icons.Default.Menu, contentDescription = "Menu")
+                        }
+                    },
+                    actions = {
+                        IconButton(onClick = onSearchClick) {
+                            Icon(Icons.Default.Search, contentDescription = "Search")
+                        }
                     }
-                }
-            )
-        }
-    ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-        ) {
-            if (isLoading) {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator()
-                }
-            } else if (error != null) {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text("Error: ${error}", color = MaterialTheme.colorScheme.error)
-                }
-            } else {
-                LazyColumn(
-                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 8.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    items(topHeadlines) { article ->
-                        ArticleCard(article = article, onClick = {
-                            article.url?.let { onArticleClick(it) }
-                        })
+                )
+            }
+        ) { paddingValues ->
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+            ) {
+
+                if (isLoading) {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator()
+                    }
+                } else if (error != null) {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Text("Error: ${error}", color = MaterialTheme.colorScheme.error)
+                    }
+                } else {
+                    LazyColumn(
+                        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 8.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        items(topHeadlines) { article ->
+                            ArticleCard(article = article, onClick = {
+                                article.url?.let { onArticleClick(it) }
+                            })
+                        }
                     }
                 }
             }
         }
     }
 }
+
 
 @Composable
 fun ArticleCard(article: Article, onClick: () -> Unit) {

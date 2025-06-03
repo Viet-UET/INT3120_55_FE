@@ -16,7 +16,7 @@ import com.example.quicknews.ui.theme.QuickNewsTheme
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge() // Optional: for full-screen content
+        enableEdgeToEdge()
         setContent {
             QuickNewsTheme {
                 Surface(

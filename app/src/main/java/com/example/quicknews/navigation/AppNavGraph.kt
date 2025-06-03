@@ -41,7 +41,10 @@ fun AppNavGraph(
                 },
                 onSearchClick = {
                     navController.navigate(Routes.SEARCH)
-                }
+                },
+                onCategoryClick = { category -> // Đã thêm lại tham số này
+                    navController.navigate(Routes.createCategoryRoute(category))
+                },
             )
         }
         composable(Routes.CATEGORY_NEWS) { backStackEntry ->
@@ -52,8 +55,8 @@ fun AppNavGraph(
                     onArticleClick = { url ->
                         navController.navigate(Routes.createArticleDetailRoute(url))
                     },
-                    onBackClick = {
-                        navController.popBackStack()
+                    onNavigateToHome = {
+                        navController.popBackStack(Routes.HOME, inclusive = false)
                     }
                 )
             }
