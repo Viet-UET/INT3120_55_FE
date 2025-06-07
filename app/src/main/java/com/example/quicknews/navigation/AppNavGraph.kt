@@ -1,20 +1,24 @@
 package com.example.quicknews.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.quicknews.ui.screens.AccountScreen
 import com.example.quicknews.ui.screens.ArticleDetailScreen
 import com.example.quicknews.ui.screens.CategoryNewsScreen
 import com.example.quicknews.ui.screens.HomeScreen
 import com.example.quicknews.ui.screens.SearchScreen
+import com.example.quicknews.ui.viewmodel.AuthViewModel
 
 object Routes {
     const val HOME = "home"
     const val CATEGORY_NEWS = "category_news/{category}"
     const val SEARCH = "search"
     const val ARTICLE_DETAIL = "article_detail/{url}"
+    const val ACCOUNT = "account"
 
     fun createCategoryRoute(category: String) = "category_news/$category"
     fun createArticleDetailRoute(url: String) = "article_detail/${url.encodeUrl()}" // Encode URL
@@ -34,6 +38,18 @@ fun AppNavGraph(
     navController: NavHostController = rememberNavController()
 ) {
     NavHost(navController = navController, startDestination = Routes.HOME) {
+        composable(Routes.ACCOUNT) {
+            val authViewModel: AuthViewModel = viewModel()
+            AccountScreen(
+                authViewModel = authViewModel,
+                onBackClick = {
+                    navController.popBackStack()
+                }
+            )
+        }
+
+
+
         composable(Routes.HOME) {
             HomeScreen(
                 onArticleClick = { url ->
@@ -45,6 +61,9 @@ fun AppNavGraph(
                 onCategoryClick = { category -> // Đã thêm lại tham số này
                     navController.navigate(Routes.createCategoryRoute(category))
                 },
+                onAccountClick = { // ✅
+                    navController.navigate(Routes.ACCOUNT)
+                }
             )
         }
         composable(Routes.CATEGORY_NEWS) { backStackEntry ->

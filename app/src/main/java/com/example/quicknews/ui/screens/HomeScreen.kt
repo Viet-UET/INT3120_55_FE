@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
@@ -30,6 +31,7 @@ fun HomeScreen(
     onArticleClick: (String) -> Unit,
     onSearchClick: () -> Unit,
     onCategoryClick: (String) -> Unit,
+    onAccountClick: () -> Unit
 ) {
     val topHeadlines by newsViewModel.topHeadlines.collectAsState()
     val isLoading by newsViewModel.isLoading.collectAsState()
@@ -81,6 +83,9 @@ fun HomeScreen(
                     actions = {
                         IconButton(onClick = onSearchClick) {
                             Icon(Icons.Default.Search, contentDescription = "Search")
+                        }
+                        IconButton(onClick = onAccountClick) { // ✅ Nút Account
+                            Icon(Icons.Default.AccountCircle, contentDescription = "Account")
                         }
                     }
                 )
