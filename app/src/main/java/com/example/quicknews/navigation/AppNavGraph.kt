@@ -9,11 +9,13 @@ import androidx.navigation.compose.rememberNavController
 import com.example.quicknews.ui.screens.AccountScreen
 import com.example.quicknews.ui.screens.ArticleDetailScreen
 import com.example.quicknews.ui.screens.CategoryNewsScreen
+import com.example.quicknews.ui.screens.FavoritesScreen
 import com.example.quicknews.ui.screens.HomeScreen
 import com.example.quicknews.ui.screens.SearchScreen
 import com.example.quicknews.ui.viewmodel.AuthViewModel
 
 object Routes {
+    const val FAVORITES = "favorites"
     const val HOME = "home"
     const val CATEGORY_NEWS = "category_news/{category}"
     const val SEARCH = "search"
@@ -37,9 +39,10 @@ fun String.decodeUrl(): String {
 fun AppNavGraph(
     navController: NavHostController = rememberNavController()
 ) {
+    val authViewModel: AuthViewModel = viewModel() // tạo 1 lần duy nhất
+
     NavHost(navController = navController, startDestination = Routes.HOME) {
         composable(Routes.ACCOUNT) {
-            val authViewModel: AuthViewModel = viewModel()
             AccountScreen(
                 authViewModel = authViewModel,
                 onBackClick = {
@@ -47,22 +50,30 @@ fun AppNavGraph(
                 }
             )
         }
-
-
-
+        composable(Routes.FAVORITES) {
+            FavoritesScreen(
+                authViewModel = authViewModel,
+                onArticleClick = { url -> navController.navigate(Routes.createArticleDetailRoute(url)) },
+                onBackClick = { navController.popBackStack() }
+            )
+        }
         composable(Routes.HOME) {
             HomeScreen(
+                authViewModel = authViewModel,
                 onArticleClick = { url ->
                     navController.navigate(Routes.createArticleDetailRoute(url))
                 },
                 onSearchClick = {
                     navController.navigate(Routes.SEARCH)
                 },
-                onCategoryClick = { category -> // Đã thêm lại tham số này
+                onCategoryClick = { category ->
                     navController.navigate(Routes.createCategoryRoute(category))
                 },
-                onAccountClick = { // ✅
+                onAccountClick = {
                     navController.navigate(Routes.ACCOUNT)
+                },
+                onFavoritesClick = {
+                    navController.navigate(Routes.FAVORITES)
                 }
             )
         }
@@ -70,6 +81,7 @@ fun AppNavGraph(
             val category = backStackEntry.arguments?.getString("category")
             if (category != null) {
                 CategoryNewsScreen(
+                    authViewModel = authViewModel,
                     category = category,
                     onArticleClick = { url ->
                         navController.navigate(Routes.createArticleDetailRoute(url))
@@ -82,6 +94,7 @@ fun AppNavGraph(
         }
         composable(Routes.SEARCH) {
             SearchScreen(
+                authViewModel = authViewModel,
                 onArticleClick = { url ->
                     navController.navigate(Routes.createArticleDetailRoute(url))
                 },
